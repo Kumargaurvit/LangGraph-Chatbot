@@ -1,11 +1,29 @@
 import streamlit as st
 from langchain_core.messages import HumanMessage
 from src.chatbot_backend import chatbot
-from src.utils import *
+import uuid
 
 ############# PAGE CONFIG #############
 
 st.set_page_config(page_title="LangGraph Chatbot")
+
+############# UTILITY FUNCTIONS #############
+
+def generate_thread_id():
+    '''
+    Function to generate a new thread id for different chat sessions
+    '''
+    thread_id = uuid.uuid4()
+
+    return thread_id
+
+def reset_chat():
+    '''
+    Function to Reset the Chat when the New Chat button is clicked
+    '''
+    thread_id = generate_thread_id()
+    st.session_state['thread_id'] = thread_id
+    st.session_state['message_history'] = []
 
 ############# SESSION SETUP #############
 
@@ -26,7 +44,8 @@ if "thread_id" not in st.session_state:
  
 st.sidebar.title("LangGraph Chatbot")
 
-st.sidebar.button('New Chat')
+if st.sidebar.button('New Chat'):
+    reset_chat()
 
 st.sidebar.title("My Conversations")
 
