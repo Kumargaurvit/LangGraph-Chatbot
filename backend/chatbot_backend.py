@@ -1,9 +1,10 @@
 from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph.message import add_messages
 from langchain_ollama import ChatOllama
 from langchain_core.messages import BaseMessage
 from typing import TypedDict, Annotated
+import sqlite3
 
 # Defining the State
 class ChatState(TypedDict):
@@ -23,9 +24,12 @@ def chat_node(state: ChatState):
 
     return {'messages' : [response]}
 
+############# SQLite Database #############
 
-# Creating a checkpointer to save the graph state in the memory
-checkpointer = InMemorySaver()
+conn = sqlite3.connect(database='chat_history.db', check_same_thread=False)
+
+# Creating a checkpointer to save the graph state in the SQLite Database
+checkpointer = SqliteSaver(conn=conn)
 
 # Creating the graph
 graph = StateGraph(ChatState)

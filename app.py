@@ -1,6 +1,6 @@
 import streamlit as st
 from langchain_core.messages import HumanMessage
-from src.chatbot_backend import chatbot
+from backend.chatbot_backend import chatbot
 import uuid
 
 ############# PAGE CONFIG #############
