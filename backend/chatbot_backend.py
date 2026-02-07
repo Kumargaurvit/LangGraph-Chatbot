@@ -26,7 +26,7 @@ def chat_node(state: ChatState):
 
 ############# SQLite Database #############
 
-conn = sqlite3.connect(database='chat_history.db', check_same_thread=False)
+conn = sqlite3.connect(database='backend/chat_db/chat_history.db', check_same_thread=False)
 
 # Creating a checkpointer to save the graph state in the SQLite Database
 checkpointer = SqliteSaver(conn=conn)

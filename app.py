@@ -1,6 +1,6 @@
 import streamlit as st
 from langchain_core.messages import HumanMessage
-from backend.chatbot_backend import chatbot
+from backend.chatbot_backend import chatbot, checkpointer
 import uuid
 
 ############# PAGE CONFIG #############
@@ -41,6 +41,12 @@ def load_conversation(thread_id):
     conversation = chatbot.get_state(config=THREAD_CONFIG).values['messages']
     return conversation
 
+def retrieve_all_threads():
+    all_threads = set()
+    for checkpoint in checkpointer.list(None):
+        all_threads.add(checkpoint.config['configurable']['thread_id'])
+    return list(all_threads)
+
 ############# SESSION SETUP #############
 
 # Creating a message store to store chat history for that specific streamlit session
@@ -53,7 +59,7 @@ if "thread_id" not in st.session_state:
 
 # Creating a chat thread store to store all the threads
 if "chat_thread" not in st.session_state:
-    st.session_state["chat_thread"] = []
+    st.session_state["chat_thread"] = retrieve_all_threads()
 
 # Adding the thread id to the chat thread store
 add_thread(st.session_state['thread_id'])
