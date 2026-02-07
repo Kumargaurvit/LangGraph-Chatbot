@@ -23,7 +23,23 @@ def reset_chat():
     '''
     thread_id = generate_thread_id()
     st.session_state['thread_id'] = thread_id
+    add_thread(st.session_state['thread_id'])
     st.session_state['message_history'] = []
+
+def add_thread(thread_id):
+    '''
+    Function Add thread id to the chat thread store
+    '''
+    if thread_id not in st.session_state['chat_thread']:
+        st.session_state['chat_thread'].append(thread_id)
+
+def load_conversation(thread_id):
+    '''
+    Function to load conversation for a particular thread id
+    '''
+    THREAD_CONFIG = {'configurable' : {'thread_id' : thread_id}}
+    conversation = chatbot.get_state(config=THREAD_CONFIG).values['messages']
+    return conversation
 
 ############# SESSION SETUP #############
 
@@ -31,14 +47,16 @@ def reset_chat():
 if "message_history" not in st.session_state:
     st.session_state["message_history"] = []
 
-# Displaying the previous messages in the chat history
-for message in st.session_state["message_history"]:
-    with st.chat_message(message['role']):
-        st.text(message['content'])
-
 # Creating a thread id store to store seperate threads for seperate chat sessions
 if "thread_id" not in st.session_state:
     st.session_state["thread_id"] = generate_thread_id()
+
+# Creating a chat thread store to store all the threads
+if "chat_thread" not in st.session_state:
+    st.session_state["chat_thread"] = []
+
+# Adding the thread id to the chat thread store
+add_thread(st.session_state['thread_id'])
 
 ############# SIDEBAR UI #############
  
@@ -49,10 +67,33 @@ if st.sidebar.button('New Chat'):
 
 st.sidebar.title("My Conversations")
 
-st.sidebar.text(st.session_state['thread_id'])
+# Displaying all the thread id as a button, 
+# clicking any of the thread id button will restore the chat for the thread
+for thread_id in st.session_state['chat_thread']:
+    if st.sidebar.button(str(thread_id)):
+        st.session_state['thread_id'] = thread_id
+        messages = load_conversation(thread_id)
+
+        temp_messages = []
+
+        for message in messages:
+            if isinstance(message, HumanMessage):
+                role = 'user'
+            else:
+                role = 'assistant'
+        
+            temp_messages.append({'role' : role, 'content' : message.content})
+        
+        st.session_state['message_history'] = temp_messages
 
 ############# CHAT UI #############
 
+# Displaying the previous messages in the chat history
+for message in st.session_state["message_history"]:
+    with st.chat_message(message['role']):
+        st.text(message['content'])
+
+# Taking User Input
 user_input = st.chat_input(placeholder='Ask Anything:')
 
 if user_input:
