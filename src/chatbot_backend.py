@@ -10,7 +10,7 @@ class ChatState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
 
 # Initializing LLM Model using Ollama
-llm = ChatOllama(model="llama3.2")
+llm = ChatOllama(model="gpt-oss:20b-cloud")
 
 # Function to add as a node in the graph
 def chat_node(state: ChatState):
