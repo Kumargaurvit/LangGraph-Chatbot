@@ -25,15 +25,15 @@ if user_input:
     with st.chat_message("user"):
         st.text(user_input)
 
-    # Invoking the chatbot workflow to generate a response
-    response = chatbot.invoke({"messages" : [HumanMessage(content=user_input)]}, config=CONFIG)
-
-    # Extracting only the answer from the response
-    ai_response = response['messages'][-1].content
-
-    # Adding the response to the message history store
-    st.session_state['message_history'].append({'role' : 'assistant', 'content' : ai_response})
-
-    # Displaying the Response
+    # Streaming the output of the chatbot, rather than waiting for the response to generate and then print it as a whole
     with st.chat_message("assistant"):
-        st.text(ai_response)
+        ai_message = st.write_stream(
+            message_chunk.content for message_chunk, _ in chatbot.stream(
+                {'messages' : [HumanMessage(content=user_input)]},
+                config=CONFIG,
+                stream_mode = "messages"
+            )
+        )
+
+        # Addding the chatbot response to the message history store
+        st.session_state["message_history"].append({'role' : 'assistant', 'content' : ai_message})
