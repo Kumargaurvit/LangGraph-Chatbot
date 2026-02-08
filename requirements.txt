@@ -1,6 +1,7 @@
 langgraph
 langgraph-checkpoint-sqlite
 langchain-core
+langchain-community
 langchain-ollama
 streamlit
 python-dotenv
