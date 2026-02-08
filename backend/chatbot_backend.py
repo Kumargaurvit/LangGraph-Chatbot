@@ -55,7 +55,7 @@ def get_stock_price(symbol: str) -> dict:
     Fetches the latest stock price for a given symbol (eg. GOOG, AAPL, TSLA)
     Uses Alpha Vantage to fetch the price data
     """
-    url = f"https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={symbol}&interval=5min&apikey={ALPHA_VANTAGE_API_KEY}"
+    url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&interval=5min&apikey={ALPHA_VANTAGE_API_KEY}"
     r = requests.get(url)
     stock_data = r.json()
 
@@ -82,7 +82,7 @@ def chat_node(state: ChatState):
     """
     messages = state['messages']
 
-    response = llm.invoke(messages)
+    response = llm_with_tools.invoke(messages)
 
     return {'messages' : [response]}
 
