@@ -1,13 +1,23 @@
+import os
 import streamlit as st
+from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
 from backend.chatbot_backend import chatbot, checkpointer
 import uuid
 
-############# PAGE CONFIG #############
+load_dotenv()
+
+# ------------- LANGSMITH TRACING -------------
+
+os.environ["LANGSMITH_API_KEY"] = os.getenv("LANGSMITH_API_KEY")
+os.environ["LANGSMITH_PROJECT"] = os.getenv("LANGSMITH_PROJECT")
+os.environ["LANGSMITH_TRACING"] = "true"
+
+# ------------- PAGE CONFIG -------------
 
 st.set_page_config(page_title="LangGraph Chatbot")
 
-############# UTILITY FUNCTIONS #############
+# ------------- UTILITY FUNCTIONS -------------
 
 def generate_thread_id():
     '''
@@ -47,7 +57,7 @@ def retrieve_all_threads():
         all_threads.add(checkpoint.config['configurable']['thread_id'])
     return list(all_threads)
 
-############# SESSION SETUP #############
+# ------------- SESSION SETUP -------------
 
 # Creating a message store to store chat history for that specific streamlit session
 if "message_history" not in st.session_state:
@@ -64,7 +74,7 @@ if "chat_thread" not in st.session_state:
 # Adding the thread id to the chat thread store
 add_thread(st.session_state['thread_id'])
 
-############# SIDEBAR UI #############
+# ------------- SIDEBAR UI -------------
  
 st.sidebar.title("LangGraph Chatbot")
 
@@ -92,7 +102,7 @@ for thread_id in st.session_state['chat_thread'][::-1]:
         
         st.session_state['message_history'] = temp_messages
 
-############# CHAT UI #############
+# ------------- CHAT UI -------------
 
 # Displaying the previous messages in the chat history
 for message in st.session_state["message_history"]:
@@ -111,7 +121,11 @@ if user_input:
         st.text(user_input)
 
     # Creating a config to pass to the checkpointer
-    CONFIG = {'configurable' : {'thread_id' : st.session_state['thread_id']}}
+    CONFIG = {
+        'configurable' : {'thread_id' : st.session_state['thread_id']},
+        'metadata' : {'thread_id' : st.session_state['thread_id']},
+        'run_name' : 'langgraph-chatbot'
+    }
 
     # Streaming the output of the chatbot, rather than waiting for the response to generate and then print it as a whole
     with st.chat_message("assistant"):
