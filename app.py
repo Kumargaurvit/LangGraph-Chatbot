@@ -1,7 +1,7 @@
 import os
 import streamlit as st
 from dotenv import load_dotenv
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, AIMessage
 from backend.chatbot_backend import chatbot, checkpointer
 import uuid
 
@@ -129,13 +129,16 @@ if user_input:
 
     # Streaming the output of the chatbot, rather than waiting for the response to generate and then print it as a whole
     with st.chat_message("assistant"):
-        ai_message = st.write_stream(
-            message_chunk.content for message_chunk, _ in chatbot.stream(
+        def stream_ai_message():
+            for message_chunk, _ in chatbot.stream(
                 {'messages' : [HumanMessage(content=user_input)]},
                 config=CONFIG,
                 stream_mode = "messages"
-            )
-        )
+            ):
+                if isinstance(message_chunk, AIMessage):
+                    yield message_chunk.content
+        
+        ai_message = st.write_stream(stream_ai_message())
 
-        # Addding the chatbot response to the message history store
-        st.session_state["message_history"].append({'role' : 'assistant', 'content' : ai_message})
+    # Addding the chatbot response to the message history store
+    st.session_state["message_history"].append({'role' : 'assistant', 'content' : ai_message})
